@@ -26,6 +26,12 @@ AUTH0_ALGORITHM=
 | AUTH0_JWT_CLIENTSECRET | Auth0 client secret of the micro service getting a token |
 | AUTH0_ALGORITHM | Algorithm method, advise RS256 (default) |
 
+### Registering service provider
+Add the following snippet to the `bootstrap/app.php` file under the register service providers section:
+
+```php
+$app->register(Carsguide\Auth\Providers\AuthManagerServiceProvider::class);
+```
 
 ### Registering middleware
 To use token and scope validation register the middleware via routeMiddleware() in bootstrap/app.php
@@ -49,7 +55,9 @@ $auth->getToken();
 Using `AuthManager` Facade:
 
 ```php
-AuthManager::getToken()
+use Carsguide\Auth\Facades\AuthManager;
+
+AuthManager::getToken();
 ```
 
 ### Validate JWT Token / Scope Access
