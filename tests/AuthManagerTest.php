@@ -25,7 +25,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillReturnAuth0AccessToken()
     {
@@ -44,7 +44,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillCatchRequestException()
     {
@@ -63,7 +63,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillReturnValidSuccessResponse()
     {
@@ -79,7 +79,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillReturnValidErrorResponse()
     {
@@ -95,7 +95,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillDecodeResponse()
     {
@@ -111,7 +111,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillThrowExceptionIfAuth0ConfigIsNotSet()
     {
@@ -126,7 +126,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function itWillThrowExceptionIfAuth0OauthUrlIsNotSet()
     {
@@ -141,7 +141,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function shouldThrowExceptionIfAudienceIsNotSet()
     {
@@ -154,7 +154,7 @@ class AuthManagerTest extends TestCase
 
     /**
      * @test
-     * @group AuthHandler
+     * @group AuthManager
      */
     public function shouldReturnAudience()
     {
