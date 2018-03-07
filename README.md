@@ -49,6 +49,7 @@ use Carsguide\Auth\AuthManager;
 use GuzzleHttp\Client;
 
 $auth = new AuthManager(new Client());
+$auth->setAudience('foobar');
 $auth->getToken();
 ```
 
@@ -57,7 +58,7 @@ Using `AuthManager` Facade:
 ```php
 use Carsguide\Auth\Facades\AuthManager;
 
-AuthManager::getToken();
+AuthManager::setAudience('foobar')->getToken();
 ```
 
 ### Validate JWT Token / Scope Access
