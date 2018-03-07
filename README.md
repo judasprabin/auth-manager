@@ -49,7 +49,7 @@ use Carsguide\Auth\AuthManager;
 use GuzzleHttp\Client;
 
 $auth = new AuthManager(new Client());
-$auth->setAudience('foobar');
+$auth = $auth->setAudience('foobar');
 $auth->getToken();
 ```
 
