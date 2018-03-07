@@ -15,6 +15,13 @@ class AuthManager
     protected $client;
 
     /**
+     * Api audience
+     *
+     * @var string
+     */
+    protected $audience;
+
+    /**
      * Constructor
      *
      * @param \GuzzleHttp\Client  $client
@@ -23,6 +30,33 @@ class AuthManager
     public function __construct(Client $client)
     {
         $this->client = $client;
+    }
+
+    /**
+     * Set api audience.
+     *
+     * @param string $audience
+     * @return $this
+     */
+    public function setAudience($audience)
+    {
+        $this->audience = $audience;
+
+        return $this;
+    }
+
+    /**
+     * Get the audience
+     *
+     * @return string
+     */
+    public function getAudience()
+    {
+        if (!$this->audience) {
+            throw new Exception("Audience is not set.", 1);
+        }
+
+        return $this->audience;
     }
 
     /**
@@ -95,7 +129,7 @@ class AuthManager
         $options = [
             'client_id' => env('AUTH0_JWT_CLIENTID'),
             'client_secret' => env('AUTH0_JWT_CLIENTSECRET'),
-            'audience' => env('AUTH0_AUDIENCE'),
+            'audience' => $this->getAudience(),
             'grant_type' => env('AUTH0_GRANT_TYPE', 'client_credentials'),
         ];
 

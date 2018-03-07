@@ -21,7 +21,6 @@ class AuthManagerTest extends TestCase
         putenv("AUTH0_OAUTH_URL=https://auth0.example");
         putenv("AUTH0_JWT_CLIENTID=clientId");
         putenv("AUTH0_JWT_CLIENTSECRET=secret");
-        putenv("AUTH0_AUDIENCE=auth0apiname");
     }
 
     /**
@@ -37,7 +36,7 @@ class AuthManagerTest extends TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
 
-        $auth = (new AuthManager($client))->getToken();
+        $auth = (new AuthManager($client))->setAudience('foo')->getToken();
 
         $this->assertEquals('JWT token', $auth->access_token);
         $this->assertEquals(200, $auth->status_code);
@@ -56,7 +55,7 @@ class AuthManagerTest extends TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
 
-        $auth = (new AuthManager($client))->getToken();
+        $auth = (new AuthManager($client))->setAudience('foo')->getToken();
 
         $this->assertEquals('access_denied', $auth->message);
         $this->assertEquals(401, $auth->status_code);
@@ -68,7 +67,7 @@ class AuthManagerTest extends TestCase
      */
     public function itWillReturnValidSuccessResponse()
     {
-        $auth = new AuthManager(new Client);
+        $auth = (new AuthManager(new Client))->setAudience('foo');
 
         $response = new Response(200, [], json_encode(['access_token' => 'JWT token']));
 
@@ -84,7 +83,7 @@ class AuthManagerTest extends TestCase
      */
     public function itWillReturnValidErrorResponse()
     {
-        $auth = new AuthManager(new Client);
+        $auth = (new AuthManager(new Client))->setAudience('foo');
 
         $response = new Response(401, [], json_encode(['error' => 'access_denied']));
 
@@ -100,7 +99,7 @@ class AuthManagerTest extends TestCase
      */
     public function itWillDecodeResponse()
     {
-        $auth = new AuthManager(new Client);
+        $auth = (new AuthManager(new Client))->setAudience('foo');
 
         $response = new Response(200, [], json_encode(['access_token' => 'JWT token']));
 
@@ -138,5 +137,29 @@ class AuthManagerTest extends TestCase
         $auth = new AuthManager(new Client);
 
         $auth = $auth->getUrl();
+    }
+
+    /**
+     * @test
+     * @group AuthHandler
+     */
+    public function shouldThrowExceptionIfAudienceIsNotSet()
+    {
+        $this->expectException(Exception::class);
+
+        $auth = new AuthManager(new Client);
+
+        $auth->getToken();
+    }
+
+    /**
+     * @test
+     * @group AuthHandler
+     */
+    public function shouldReturnAudience()
+    {
+        $auth = (new AuthManager(new Client))->setAudience('foo');
+
+        $this->assertEquals('foo', $auth->getAudience());
     }
 }
