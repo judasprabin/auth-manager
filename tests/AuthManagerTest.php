@@ -71,7 +71,7 @@ class AuthManagerTest extends TestCase
 
         $response = new Response(200, [], json_encode(['access_token' => 'JWT token']));
 
-        $auth = $auth->successResponse($response);
+        $auth = $auth->successResponse($response->getStatusCode(), ($auth->decodeResponse($response))->access_token);
 
         $this->assertEquals('JWT token', $auth->access_token);
         $this->assertEquals(200, $auth->status_code);

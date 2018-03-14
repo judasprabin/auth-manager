@@ -6,6 +6,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Cache;
 
 class AuthManager
 {
@@ -20,6 +21,20 @@ class AuthManager
      * @var string
      */
     protected $audience;
+
+    /**
+     * Determine JWT is cached or not.
+     *
+     * @var string
+     */
+    protected $cache = false;
+
+    /**
+     * Cache duration
+     *
+     * @var string
+     */
+    protected $cacheTime;
 
     /**
      * Constructor
@@ -60,16 +75,50 @@ class AuthManager
     }
 
     /**
+     * Cache JWT token
+     *
+     * @param int $time
+     * @return $this
+     */
+    public function cache(int $time = 50)
+    {
+        $this->cache = true;
+        $this->cacheTime = $time;
+
+        return $this;
+    }
+
+    /**
+     * Get cache key
+     *
+     * @return string
+     */
+    public function cacheKey()
+    {
+        return 'auth0_jwt_' . $this->getAudience();
+    }
+
+    /**
      * Get Auth0 token
      *
      * @return \StdClass
      */
     public function getToken()
     {
+        if ($this->cache && Cache::has($this->cacheKey())) {
+            return $this->successResponse(200, Cache::get($this->cacheKey()));
+        }
+
         try {
             $response = $this->client->post($this->getUrl(), ['json' => $this->getOptions()]);
 
-            return $this->successResponse($response);
+            $accessToken = ($this->decodeResponse($response))->access_token;
+
+            if ($this->cache) {
+                Cache::put($this->cacheKey(), $accessToken, $this->cacheTime);
+            }
+
+            return $this->successResponse($response->getStatusCode(), $accessToken);
 
         } catch (RequestException $e) {
             return $this->errorResponse($e->getResponse());
@@ -79,15 +128,16 @@ class AuthManager
     /**
      * Prepare successful response with data
      *
-     * @param \GuzzleHttp\Psr7\Response  $respone
+     * @param int $code
+     * @param string $accessToken
      * @return \StdClass
      */
-    public function successResponse(Response $response)
+    public function successResponse($code, $accessToken)
     {
         return (object) [
             'success' => true,
-            'status_code' => $response->getStatusCode(),
-            'access_token' => ($this->decodeResponse($response))->access_token,
+            'status_code' => $code,
+            'access_token' => $accessToken,
         ];
     }
 
