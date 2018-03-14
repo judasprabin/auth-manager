@@ -11,12 +11,15 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Cache;
 
 class AuthManagerTest extends TestCase
 {
     public function setUp()
     {
         parent::setUp();
+
+        $this->registerServices();
 
         putenv("AUTH0_OAUTH_URL=https://auth0.example");
         putenv("AUTH0_JWT_CLIENTID=clientId");
@@ -40,6 +43,51 @@ class AuthManagerTest extends TestCase
 
         $this->assertEquals('JWT token', $auth->access_token);
         $this->assertEquals(200, $auth->status_code);
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function itWillCacheAuth0Token()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['access_token' => 'JWT token'])),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+
+        $authManager = (new AuthManager($client))->setAudience('foo');
+
+        $auth = $authManager->cache()->getToken();
+
+        $this->assertEquals($auth->access_token, Cache::get($authManager->cacheKey()));
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function itWillReturnTokenFromCache()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['access_token' => 'This token will not return'])),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+
+        $authManager = (new AuthManager($client))->setAudience('foo');
+
+        // If cache working, the following token will return
+        // by the AuthManager
+        Cache::put($authManager->cacheKey(), 'JWT token', 50);
+
+        $auth = $authManager->cache()
+            ->getToken();
+
+        $this->assertEquals('JWT token', $auth->access_token);
     }
 
     /**
