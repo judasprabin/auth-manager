@@ -61,6 +61,16 @@ use Carsguide\Auth\Facades\AuthManager;
 AuthManager::setAudience('foobar')->getToken();
 ```
 
+Cache JWT token:
+```php
+ AuthManager::setAudience('foobar')
+    // By default, JWT will cache for 50 minutes
+    // If you need to override the default length, 
+    // pass minutes in cache(120) method.
+    ->cache() // or ->cache($minutes = 120)
+    ->getToken();
+```
+
 ### Validate JWT Token / Scope Access
 Each token is validated via middleware.  You must call the middleware in routes or the controller to validate access.  The middleware requires a scope be defined, nothing can be global.
 
