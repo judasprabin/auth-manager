@@ -4,7 +4,6 @@ namespace Carsguide\Auth;
 
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Cache;
 
@@ -120,8 +119,8 @@ class AuthManager
 
             return $this->successResponse($response->getStatusCode(), $accessToken);
 
-        } catch (RequestException $e) {
-            return $this->errorResponse($e->getResponse());
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getCode(), $e->getMessage());
         }
     }
 
@@ -144,17 +143,16 @@ class AuthManager
     /**
      * Prepare error response
      *
-     * @param \GuzzleHttp\Psr7\Response  $respone
+     * @param int code
+     * @param string message
      * @return \StdClass
      */
-    public function errorResponse(Response $response)
+    public function errorResponse($code, $message)
     {
-        $body = $this->decodeResponse($response);
-
         return (object) [
             'success' => false,
-            'status_code' => $response->getStatusCode(),
-            'message' => isset($body->error) ? $body->error : 'Auth0 Exception caught',
+            'status_code' => $code,
+            'message' => "AuthManager exception: " . $message,
         ];
     }
 
