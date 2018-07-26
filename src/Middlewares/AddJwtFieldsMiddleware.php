@@ -81,7 +81,7 @@ class AddJwtFieldsMiddleware
     {
         foreach ($this->fields as $field) {
             if (!empty($this->decodedToken->$field)) {
-                $this->request->request->add([$field => $this->decodedToken->$field]);
+                $this->request->merge([$field => $this->decodedToken->$field]);
             }
         }
     }
