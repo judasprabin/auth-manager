@@ -27,19 +27,15 @@ class AddJwtFieldsMiddleware
         //verify and decode token
         try {
             $this->verifyAndDecodeToken($this->request->bearerToken());
-        } catch (InvalidTokenException $e) {
-            Log::info('Invalid token');
-            return $this->json('Invalid token', 401);
-        } catch (CoreException $e) {
-            Log::warning('Auth0 Core Exception', ['exceptionMessage' => $e->getMessage()]);
-            return $this->json($e->getMessage(), 401);
+        } catch (CoreException | InvalidTokenException $e) {
+            //Log::info('Invalid token');
+            //return $this->json('Invalid token', 401);
         }
 
         $this->explodeFields($fields);
 
         $this->addFieldsToRequest();
 
-        //all ok, proceed
         return $next($this->request);
     }
 
@@ -80,9 +76,8 @@ class AddJwtFieldsMiddleware
     public function addFieldsToRequest()
     {
         foreach ($this->fields as $field) {
-            if (!empty($this->decodedToken->$field)) {
-                $this->request->merge([$field => $this->decodedToken->$field]);
-            }
+            $value = !empty($this->decodedToken->$field) ? $this->decodedToken->$field : null;
+            $this->request->merge([$field => $value]);
         }
     }
 
