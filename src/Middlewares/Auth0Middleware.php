@@ -60,8 +60,6 @@ class Auth0Middleware
             return $this->json($e->getMessage(), 403);
         }
 
-        $request->request->add(['azp_client_id' => $this->decodedToken->azp]);
-
         //all ok, proceed
         return $next($request);
     }
