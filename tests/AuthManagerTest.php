@@ -97,7 +97,7 @@ class AuthManagerTest extends TestCase
     public function itWillCatchRequestException()
     {
         $mock = new MockHandler([
-            new RequestException("Access denied", new Request('post', 'https://auth0.test'), new Response(401, [], json_encode(['error' => 'access_denied']))),
+            new RequestException("access denied", new Request('post', 'https://auth0.test'), new Response(401, [], json_encode(['error' => 'access_denied']))),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -105,7 +105,7 @@ class AuthManagerTest extends TestCase
 
         $auth = (new AuthManager($client))->setAudience('foo')->getToken();
 
-        $this->assertEquals('access_denied', $auth->message);
+        $this->assertEquals('AuthManager exception: access denied', $auth->message);
         $this->assertEquals(401, $auth->status_code);
     }
 
@@ -135,9 +135,9 @@ class AuthManagerTest extends TestCase
 
         $response = new Response(401, [], json_encode(['error' => 'access_denied']));
 
-        $auth = $auth->errorResponse($response);
+        $auth = $auth->errorResponse(401, 'access denied');
 
-        $this->assertEquals('access_denied', $auth->message);
+        $this->assertEquals('AuthManager exception: access denied', $auth->message);
         $this->assertEquals(401, $auth->status_code);
     }
 
@@ -185,19 +185,6 @@ class AuthManagerTest extends TestCase
         $auth = new AuthManager(new Client);
 
         $auth = $auth->getUrl();
-    }
-
-    /**
-     * @test
-     * @group AuthManager
-     */
-    public function shouldThrowExceptionIfAudienceIsNotSet()
-    {
-        $this->expectException(Exception::class);
-
-        $auth = new AuthManager(new Client);
-
-        $auth->getToken();
     }
 
     /**
