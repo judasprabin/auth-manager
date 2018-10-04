@@ -75,7 +75,7 @@ class Auth0Middleware
         $verifier = new JWTVerifier([
             'supported_algs' => [env('AUTH0_ALGORITHM', 'RS256')],
             'valid_audiences' => [env('AUTH0_AUDIENCE', false)],
-            'authorized_iss' => [env('AUTH0_DOMAIN', false)],
+            'authorized_iss' => explode(',', env('AUTH0_DOMAIN', false)),
             'cache' => new CacheHandler(),
         ]);
 
