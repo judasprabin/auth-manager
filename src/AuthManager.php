@@ -26,21 +26,21 @@ class AuthManager
      *
      * @var string
      */
-    protected $clientId = false;
+    protected $clientId = null;
 
     /**
      * Client secret
      *
      * @var string
      */
-    protected $clientSecret = false;
+    protected $clientSecret = null;
 
     /**
      * url
      *
      * @var string
      */
-    protected $url = false;
+    protected $url = null;
 
     /**
      * Determine JWT is cached or not.
