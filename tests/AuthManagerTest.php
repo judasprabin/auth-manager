@@ -213,10 +213,60 @@ class AuthManagerTest extends TestCase
      * @test
      * @group AuthManager
      */
+    public function shouldUseDefaultIfClientIdNotSet()
+    {
+        putenv('AUTH0_JWT_CLIENTID=client_id');
+
+        $auth = (new AuthManager(new Client))->setAudience('foo');
+
+        $this->assertEquals('client_id', $auth->getOptions()['client_id']);
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
     public function couldSetClientSecret()
     {
         $auth = (new AuthManager(new Client))->setAudience('foo')->setClientSecret('clientSecret');
 
         $this->assertEquals('clientSecret', $auth->getOptions()['client_secret']);
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function shouldUseDefaultIfClientSecretNotSet()
+    {
+        putenv('AUTH0_JWT_CLIENTSECRET=client_secret');
+
+        $auth = (new AuthManager(new Client))->setAudience('foo');
+
+        $this->assertEquals('client_secret', $auth->getOptions()['client_secret']);
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function couldSetUrl()
+    {
+        $auth = (new AuthManager(new Client))->setUrl('url');
+
+        $this->assertEquals('url', $auth->getUrl());
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function shouldUseDefaultIfUrlNotSet()
+    {
+        putenv('AUTH0_OAUTH_URL=oauth_url');
+
+        $auth = (new AuthManager(new Client))->setAudience('foo');
+
+        $this->assertEquals('oauth_url', $auth->getUrl());
     }
 }

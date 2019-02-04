@@ -26,14 +26,21 @@ class AuthManager
      *
      * @var string
      */
-    protected $clientId;
+    protected $clientId = false;
 
     /**
      * Client secret
      *
      * @var string
      */
-    protected $clientSecret;
+    protected $clientSecret = false;
+
+    /**
+     * url
+     *
+     * @var string
+     */
+    protected $url = false;
 
     /**
      * Determine JWT is cached or not.
@@ -58,10 +65,6 @@ class AuthManager
     public function __construct(Client $client)
     {
         $this->client = $client;
-
-        $this->clientId = env('AUTH0_JWT_CLIENTID');
-
-        $this->clientSecret = env('AUTH0_JWT_CLIENTSECRET');
     }
 
     /**
@@ -105,6 +108,20 @@ class AuthManager
     }
 
     /**
+     * Get the client Id
+     *
+     * @return string
+     */
+    public function getClientId()
+    {
+        if (!$this->clientId) {
+            $this->clientId = env('AUTH0_JWT_CLIENTID');
+        }
+
+        return $this->clientId;
+    }
+
+    /**
      * Set client secret.
      *
      * @param string $clientSecret
@@ -115,6 +132,20 @@ class AuthManager
         $this->clientSecret = $clientSecret;
 
         return $this;
+    }
+
+    /**
+     * Get the client secret
+     *
+     * @return string
+     */
+    public function getClientSecret()
+    {
+        if (!$this->clientSecret) {
+            $this->clientSecret = env('AUTH0_JWT_CLIENTSECRET');
+        }
+
+        return $this->clientSecret;
     }
 
     /**
@@ -219,8 +250,8 @@ class AuthManager
     public function getOptions()
     {
         $options = [
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
+            'client_id' => $this->getClientId(),
+            'client_secret' => $this->getClientSecret(),
             'audience' => $this->getAudience(),
             'grant_type' => env('AUTH0_GRANT_TYPE', 'client_credentials'),
         ];
@@ -235,16 +266,31 @@ class AuthManager
     }
 
     /**
+     * Set url.
+     *
+     * @param string $url
+     * @return $this
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
      * Get Auth0 OAuth URL
      *
      * @return string
      */
     public function getUrl()
     {
-        if (!$url = env('AUTH0_OAUTH_URL')) {
-            throw new Exception("Auth0 OAuth URL not set");
+        If (!$this->url) {
+            if (!$this->url = env('AUTH0_OAUTH_URL')) {
+                throw new Exception("Auth0 OAuth URL not set");
+            }
         }
 
-        return $url;
+        return $this->url;
     }
 }
