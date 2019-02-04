@@ -197,4 +197,26 @@ class AuthManagerTest extends TestCase
 
         $this->assertEquals('foo', $auth->getAudience());
     }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function couldSetClientId()
+    {
+        $auth = (new AuthManager(new Client))->setAudience('foo')->setClientId('clientId');
+
+        $this->assertEquals('clientId', $auth->getOptions()['client_id']);
+    }
+
+    /**
+     * @test
+     * @group AuthManager
+     */
+    public function couldSetClientSecret()
+    {
+        $auth = (new AuthManager(new Client))->setAudience('foo')->setClientSecret('clientSecret');
+
+        $this->assertEquals('clientSecret', $auth->getOptions()['client_secret']);
+    }
 }

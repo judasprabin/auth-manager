@@ -22,6 +22,20 @@ class AuthManager
     protected $audience;
 
     /**
+     * Client Id
+     *
+     * @var string
+     */
+    protected $clientId;
+
+    /**
+     * Client secret
+     *
+     * @var string
+     */
+    protected $clientSecret;
+
+    /**
      * Determine JWT is cached or not.
      *
      * @var string
@@ -38,12 +52,16 @@ class AuthManager
     /**
      * Constructor
      *
-     * @param \GuzzleHttp\Client  $client
+     * @param \GuzzleHttp\Client $client
      * @return void
      */
     public function __construct(Client $client)
     {
         $this->client = $client;
+
+        $this->clientId = env('AUTH0_JWT_CLIENTID');
+
+        $this->clientSecret = env('AUTH0_JWT_CLIENTSECRET');
     }
 
     /**
@@ -71,6 +89,32 @@ class AuthManager
         }
 
         return $this->audience;
+    }
+
+    /**
+     * Set client id.
+     *
+     * @param string $clientId
+     * @return $this
+     */
+    public function setClientId($clientId)
+    {
+        $this->clientId = $clientId;
+
+        return $this;
+    }
+
+    /**
+     * Set client secret.
+     *
+     * @param string $clientSecret
+     * @return $this
+     */
+    public function setClientSecret($clientSecret)
+    {
+        $this->clientSecret = $clientSecret;
+
+        return $this;
     }
 
     /**
@@ -159,7 +203,7 @@ class AuthManager
     /**
      * Decode GuzzleHttp response
      *
-     * @param \GuzzleHttp\Psr7\Response  $response
+     * @param \GuzzleHttp\Psr7\Response $response
      * @return mixed
      */
     public function decodeResponse(Response $response)
@@ -175,8 +219,8 @@ class AuthManager
     public function getOptions()
     {
         $options = [
-            'client_id' => env('AUTH0_JWT_CLIENTID'),
-            'client_secret' => env('AUTH0_JWT_CLIENTSECRET'),
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
             'audience' => $this->getAudience(),
             'grant_type' => env('AUTH0_GRANT_TYPE', 'client_credentials'),
         ];
