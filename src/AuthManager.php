@@ -22,6 +22,27 @@ class AuthManager
     protected $audience;
 
     /**
+     * Client Id
+     *
+     * @var string
+     */
+    protected $clientId = null;
+
+    /**
+     * Client secret
+     *
+     * @var string
+     */
+    protected $clientSecret = null;
+
+    /**
+     * url
+     *
+     * @var string
+     */
+    protected $url = null;
+
+    /**
      * Determine JWT is cached or not.
      *
      * @var string
@@ -38,7 +59,7 @@ class AuthManager
     /**
      * Constructor
      *
-     * @param \GuzzleHttp\Client  $client
+     * @param \GuzzleHttp\Client $client
      * @return void
      */
     public function __construct(Client $client)
@@ -71,6 +92,60 @@ class AuthManager
         }
 
         return $this->audience;
+    }
+
+    /**
+     * Set client id.
+     *
+     * @param string $clientId
+     * @return $this
+     */
+    public function setClientId($clientId)
+    {
+        $this->clientId = $clientId;
+
+        return $this;
+    }
+
+    /**
+     * Get the client Id
+     *
+     * @return string
+     */
+    public function getClientId()
+    {
+        if (!$this->clientId) {
+            $this->clientId = env('AUTH0_JWT_CLIENTID');
+        }
+
+        return $this->clientId;
+    }
+
+    /**
+     * Set client secret.
+     *
+     * @param string $clientSecret
+     * @return $this
+     */
+    public function setClientSecret($clientSecret)
+    {
+        $this->clientSecret = $clientSecret;
+
+        return $this;
+    }
+
+    /**
+     * Get the client secret
+     *
+     * @return string
+     */
+    public function getClientSecret()
+    {
+        if (!$this->clientSecret) {
+            $this->clientSecret = env('AUTH0_JWT_CLIENTSECRET');
+        }
+
+        return $this->clientSecret;
     }
 
     /**
@@ -159,7 +234,7 @@ class AuthManager
     /**
      * Decode GuzzleHttp response
      *
-     * @param \GuzzleHttp\Psr7\Response  $response
+     * @param \GuzzleHttp\Psr7\Response $response
      * @return mixed
      */
     public function decodeResponse(Response $response)
@@ -175,8 +250,8 @@ class AuthManager
     public function getOptions()
     {
         $options = [
-            'client_id' => env('AUTH0_JWT_CLIENTID'),
-            'client_secret' => env('AUTH0_JWT_CLIENTSECRET'),
+            'client_id' => $this->getClientId(),
+            'client_secret' => $this->getClientSecret(),
             'audience' => $this->getAudience(),
             'grant_type' => env('AUTH0_GRANT_TYPE', 'client_credentials'),
         ];
@@ -191,16 +266,31 @@ class AuthManager
     }
 
     /**
+     * Set url.
+     *
+     * @param string $url
+     * @return $this
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
      * Get Auth0 OAuth URL
      *
      * @return string
      */
     public function getUrl()
     {
-        if (!$url = env('AUTH0_OAUTH_URL')) {
-            throw new Exception("Auth0 OAuth URL not set");
+        If (!$this->url) {
+            if (!$this->url = env('AUTH0_OAUTH_URL')) {
+                throw new Exception("Auth0 OAuth URL not set");
+            }
         }
 
-        return $url;
+        return $this->url;
     }
 }
