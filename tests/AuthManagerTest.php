@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
 
 class AuthManagerTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -154,7 +154,6 @@ class AuthManagerTest extends TestCase
         $auth = $auth->decodeResponse($response);
 
         $this->assertEquals('JWT token', $auth->access_token);
-
     }
 
     /**
