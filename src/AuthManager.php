@@ -154,7 +154,7 @@ class AuthManager
      * @param int $time
      * @return $this
      */
-    public function cache(int $time = 50)
+    public function cache(int $time = 3000)
     {
         $this->cache = true;
         $this->cacheTime = $time;
