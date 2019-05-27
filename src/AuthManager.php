@@ -166,6 +166,7 @@ class AuthManager
      * Get cache key
      *
      * @return string
+     * @throws Exception
      */
     public function cacheKey()
     {
@@ -174,8 +175,9 @@ class AuthManager
 
     /**
      * Get Auth0 token
-     *
+     * https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
      * @return \StdClass
+     * @throws Exception
      */
     public function getToken()
     {
@@ -185,6 +187,10 @@ class AuthManager
 
         try {
             $response = $this->client->post($this->getUrl(), ['json' => $this->getOptions()]);
+
+            if ($response->getStatusCode() != 200) {
+                throw new Exception(($this->decodeResponse($response))->error_description);
+            }
 
             $accessToken = ($this->decodeResponse($response))->access_token;
 
@@ -208,7 +214,7 @@ class AuthManager
      */
     public function successResponse($code, $accessToken)
     {
-        return (object) [
+        return (object)[
             'success' => true,
             'status_code' => $code,
             'access_token' => $accessToken,
@@ -224,7 +230,7 @@ class AuthManager
      */
     public function errorResponse($code, $message)
     {
-        return (object) [
+        return (object)[
             'success' => false,
             'status_code' => $code,
             'message' => "AuthManager exception: " . $message,
@@ -239,7 +245,7 @@ class AuthManager
      */
     public function decodeResponse(Response $response)
     {
-        return json_decode((string) $response->getBody());
+        return json_decode((string)$response->getBody());
     }
 
     /**
