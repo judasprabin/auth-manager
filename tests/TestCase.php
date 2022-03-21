@@ -103,7 +103,7 @@ abstract class TestCase extends BaseTestCase
     {
         /* Use logstash formatter for logstash log file */
         $stream = (new StreamHandler('./logs/logstash.log', 'INFO'))
-            ->setFormatter(new LogstashFormatter('lumen', null, null, 'ctxt_'));
+            ->setFormatter(new LogstashFormatter('lumen', null, 'extra', 'ctxt_'));
 
         return (new Logger('custom'))->pushHandler($stream);
     }

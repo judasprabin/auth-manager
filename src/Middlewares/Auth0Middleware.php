@@ -4,7 +4,9 @@ namespace Carsguide\Auth\Middlewares;
 
 use Auth0\SDK\Exception\CoreException;
 use Auth0\SDK\Exception\InvalidTokenException;
-use Auth0\SDK\JWTVerifier;
+use Auth0\SDK\Helpers\JWKFetcher;
+use Auth0\SDK\Helpers\Tokens\AsymmetricVerifier;
+use Auth0\SDK\Helpers\Tokens\IdTokenVerifier;
 use Carsguide\Auth\Handlers\CacheHandler;
 use Closure;
 use Exception;
@@ -72,14 +74,23 @@ class Auth0Middleware
      */
     public function verifyAndDecodeToken($token)
     {
-        $verifier = new JWTVerifier([
-            'supported_algs' => [env('AUTH0_ALGORITHM', 'RS256')],
-            'valid_audiences' => [env('AUTH0_AUDIENCE', false)],
-            'authorized_iss' => explode(',', env('AUTH0_DOMAIN', false)),
-            'cache' => new CacheHandler(),
-        ]);
+        $jwksFetcher = new JWKFetcher(new CacheHandler());
+        $jwks        = $jwksFetcher->getKeys();
+        $sigVerifier = new AsymmetricVerifier($jwks);
 
-        $this->decodedToken = $verifier->verifyAndDecode($token);
+        $idTokenVerifier = new IdTokenVerifier(env('AUTH0_DOMAIN', false), env('AUTH0_AUDIENCE', false), $sigVerifier);
+        $this->decodedToken = $idTokenVerifier->verify($token);
+
+        /**************/
+
+//        $verifier = new JWTVerifier([
+//            'supported_algs' => [env('AUTH0_ALGORITHM', 'RS256')],
+//            'valid_audiences' => [env('AUTH0_AUDIENCE', false)],
+//            'authorized_iss' => explode(',', env('AUTH0_DOMAIN', false)),
+//            'cache' => new CacheHandler(),
+//        ]);
+//
+//        $this->decodedToken = $verifier->verifyAndDecode($token);
     }
 
     /**
