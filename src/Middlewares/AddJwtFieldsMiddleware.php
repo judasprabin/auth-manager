@@ -9,6 +9,7 @@ use Auth0\SDK\Helpers\Tokens\AsymmetricVerifier;
 use Auth0\SDK\Helpers\Tokens\IdTokenVerifier;
 use Carsguide\Auth\Handlers\CacheHandler;
 use Closure;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class AddJwtFieldsMiddleware
@@ -44,15 +45,24 @@ class AddJwtFieldsMiddleware
      * verify and decode the token
      *
      * @param string $token
-     * @return void
+     * @return bool|void
      */
     public function verifyAndDecodeToken($token)
     {
-        $jwksFetcher = new JWKFetcher(new CacheHandler());
+        $auth0Domain = $this->getAuth0Domain();
+
+        if (!$auth0Domain || filter_var($auth0Domain, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $jwksUri = $auth0Domain . '.well-known/jwks.json';
+
+        $jwksFetcher = new JWKFetcher(new CacheHandler(), [ 'base_uri' => $jwksUri ]);
         $jwks        = $jwksFetcher->getKeys();
         $sigVerifier = new AsymmetricVerifier($jwks);
 
-        $idTokenVerifier = new IdTokenVerifier(env('AUTH0_DOMAIN', false), env('AUTH0_AUDIENCE', false), $sigVerifier);
+        $idTokenVerifier = new IdTokenVerifier($auth0Domain, env('AUTH0_AUDIENCE', false), $sigVerifier);
+
         $this->decodedToken = $idTokenVerifier->verify($token);
     }
 
@@ -75,9 +85,21 @@ class AddJwtFieldsMiddleware
     public function addFieldsToRequest()
     {
         foreach ($this->fields as $field) {
-            $value = !empty($this->decodedToken->$field) ? $this->decodedToken->$field : null;
+            $value = $this->decodedToken[$field] ?? null;
             $this->request->merge([$field => $value]);
         }
+    }
+
+    /**
+     * If multiple Auth0 domain is set, return the first one
+     *
+     * @return string
+     */
+    protected function getAuth0Domain(): string
+    {
+        $auth0Domains = explode(',', env('AUTH0_DOMAIN', false));
+
+        return $auth0Domains[0] ?? '';
     }
 
     /**
