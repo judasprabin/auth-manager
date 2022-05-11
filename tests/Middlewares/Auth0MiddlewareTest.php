@@ -39,7 +39,8 @@ class Auth0MiddlewareTest extends TestCase
 
         // The second parameter of the handle() method expecting a Closure.
         // Lumen usually pass next middleware as second parameter.
-        $response = $middleware->handle($request, function () { }, 'inventory:post');
+        $response = $middleware->handle($request, function () {
+        }, 'inventory:post');
 
         $this->assertEquals('Authorization Header not found', $response->getOriginalContent());
         $this->assertEquals(401, $response->status());
@@ -73,7 +74,8 @@ class Auth0MiddlewareTest extends TestCase
 
         // The second parameter of the handle() method expecting a Closure.
         // Lumen usually pass next middleware as second parameter.
-        $response = $middleware->handle($request, function () { }, 'inventory:post');
+        $response = $middleware->handle($request, function () {
+        }, 'inventory:post');
 
         $this->assertEquals('No token provided', $response->getOriginalContent());
 
@@ -106,8 +108,9 @@ class Auth0MiddlewareTest extends TestCase
 
         $middleware = new Auth0Middleware();
 
-        $response = $middleware->handle($request, function () { }, 'inventory:post');
-
+        $response = $middleware->handle($request, function () {
+        }, 'inventory:post');
+dd($response);
         $this->assertEquals('Invalid token', $response->getOriginalContent());
     }
 
@@ -227,7 +230,8 @@ class Auth0MiddlewareTest extends TestCase
         Cache::shouldReceive('get')->once();
         Cache::shouldReceive('put')->once();
 
-        $middleware->handle($request, function () { }, 'pricecalculator:post');
+        $middleware->handle($request, function () {
+        }, 'pricecalculator:post');
 
         $this->assertTrue(true);
     }
