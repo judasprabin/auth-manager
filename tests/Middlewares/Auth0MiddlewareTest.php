@@ -110,7 +110,7 @@ class Auth0MiddlewareTest extends TestCase
 
         $response = $middleware->handle($request, function () {
         }, 'inventory:post');
-dd($response);
+
         $this->assertEquals('Invalid token', $response->getOriginalContent());
     }
 
@@ -163,7 +163,7 @@ dd($response);
     {
         $middleware = new Auth0Middleware();
 
-        $middleware->decodedToken = (object)['Bearer token'];
+        $middleware->decodedToken = ['Bearer token'];
 
         try {
             $middleware->verifyUserHasScopeAccess('inventory:post');
@@ -171,7 +171,7 @@ dd($response);
             $this->assertEquals('No scopes defined in JWT', $e->getMessage());
         }
 
-        $middleware->decodedToken->scope = 'inventory:get';
+        $middleware->decodedToken['scope'] = 'inventory:get';
 
         try {
             $middleware->verifyUserHasScopeAccess('inventory:post');
@@ -188,7 +188,7 @@ dd($response);
     {
         $middleware = new Auth0Middleware();
 
-        $middleware->decodedToken = (object)['scope' => 'inventory:post'];
+        $middleware->decodedToken = ['scope' => 'inventory:post'];
 
         $this->assertTrue(in_array('inventory:post', $middleware->getScopesFromToken()));
     }
