@@ -7,7 +7,7 @@ use Auth0\SDK\Exception\InvalidTokenException;
 use Closure;
 use Illuminate\Http\JsonResponse;
 
-class AddJwtNamespaceFieldsMiddleware
+class AddJwtNamespaceFieldsMiddleware extends BaseAuthMiddleware
 {
     /**
      * Run the request filter.

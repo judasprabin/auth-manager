@@ -19,10 +19,10 @@ class BaseAuthMiddleware
     {
         $auth0Domain = $this->getAuth0Domain();
 
+        $jwksUri = $auth0Domain . '.well-known/jwks.json';
+
         if (!$auth0Domain || filter_var($auth0Domain, FILTER_VALIDATE_URL) === false) {
             $jwksUri = '';
-        } else {
-            $jwksUri = $auth0Domain . '.well-known/jwks.json';
         }
 
         $jwksFetcher = new JWKFetcher(new CacheHandler(), [ 'base_uri' => $jwksUri ]);
