@@ -6,6 +6,7 @@ use Auth0\SDK\Exception\CoreException;
 use Auth0\SDK\Exception\InvalidTokenException;
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class AddJwtFieldsMiddleware extends BaseAuthMiddleware
 {
@@ -20,6 +21,11 @@ class AddJwtFieldsMiddleware extends BaseAuthMiddleware
     public function handle($request, Closure $next, $fields)
     {
         $this->request = $request;
+
+        if (!$this->request->bearerToken()) {
+            Log::info('No token provided');
+            return $this->json('No token provided', 401);
+        }
 
         //verify and decode token
         try {
