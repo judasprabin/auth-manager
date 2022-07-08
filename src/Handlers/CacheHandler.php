@@ -11,9 +11,10 @@ class CacheHandler implements CacheInterface
      * Retrieve decoded JWT from cache
      *
      * @param string $key
+     * @param mixed|null $default
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         return Cache::get($key);
     }
@@ -22,9 +23,9 @@ class CacheHandler implements CacheInterface
      * Empty cache for the provided key
      *
      * @param string $key
-     * @return void
+     * @return bool
      */
-    public function delete($key)
+    public function delete(string $key): bool
     {
         Cache::forget($key);
     }
@@ -34,35 +35,57 @@ class CacheHandler implements CacheInterface
      *
      * @param string $key
      * @param mixed $value
-     * @return void
+     * @param int|\DateInterval|null $ttl
+     * @return bool
      */
-    public function set($key, $value, $ttl = null)
+    public function set(string $key, mixed $value, null|int|\DateInterval $ttl = null): bool
     {
         // Cache item for 30 minutes
         Cache::put($key, $value, 30);
     }
 
-    public function clear()
+    /**
+     * @return bool
+     */
+    public function clear(): bool
     {
         // TODO: Implement clear() method.
     }
 
-    public function getMultiple($keys, $default = null)
+    /**
+     * @param iterable $keys
+     * @param mixed|null $default
+     * @return iterable
+     */
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         // TODO: Implement getMultiple() method.
     }
 
-    public function setMultiple($values, $ttl = null)
+    /**
+     * @param iterable $values
+     * @param int|\DateInterval|null $ttl
+     * @return bool
+     */
+    public function setMultiple(iterable $values, null|int|\DateInterval $ttl = null): bool
     {
         // TODO: Implement setMultiple() method.
     }
 
-    public function deleteMultiple($keys)
+    /**
+     * @param iterable $keys
+     * @return bool
+     */
+    public function deleteMultiple(iterable $keys): bool
     {
         // TODO: Implement deleteMultiple() method.
     }
 
-    public function has($key)
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key): bool
     {
         // TODO: Implement has() method.
     }
