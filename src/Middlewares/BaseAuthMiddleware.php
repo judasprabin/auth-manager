@@ -2,9 +2,9 @@
 
 namespace Carsguide\Auth\Middlewares;
 
-use Auth0\SDK\Helpers\JWKFetcher;
-use Auth0\SDK\Helpers\Tokens\AsymmetricVerifier;
-use Auth0\SDK\Helpers\Tokens\IdTokenVerifier;
+use Auth0\SDK\Auth0;
+use Auth0\SDK\Configuration\SdkConfiguration;
+use Auth0\SDK\Token;
 use Carsguide\Auth\Handlers\CacheHandler;
 
 class BaseAuthMiddleware
@@ -14,35 +14,25 @@ class BaseAuthMiddleware
      *
      * @param string $token
      * @return bool|void
+     * @throws \Auth0\SDK\Exception\ConfigurationException
+     * @throws \Auth0\SDK\Exception\CoreException
      */
     public function verifyAndDecodeToken($token)
     {
-        $auth0Domain = $this->getAuth0Domain();
+        $sdkConfiguration = new SdkConfiguration([
+            'domain' =>  env('AUTH0_DOMAIN', false),
+            'clientId' => env('AUTH0_JWT_CLIENTID'),
+            'clientSecret' => env('AUTH0_JWT_CLIENTSECRET'),
+            'audience' => [env('AUTH0_AUDIENCE')],
+            'tokenAlgorithm' => env('AUTH0_ALGORITHM')
+        ]);
 
-        $jwksUri = $auth0Domain . '.well-known/jwks.json';
+        $tokenCache = new CacheHandler();
 
-        if (!$auth0Domain || filter_var($auth0Domain, FILTER_VALIDATE_URL) === false) {
-            $jwksUri = '';
-        }
+        $auth0 = new Auth0($sdkConfiguration);
 
-        $jwksFetcher = new JWKFetcher(new CacheHandler(), [ 'base_uri' => $jwksUri ]);
-        $jwks        = $jwksFetcher->getKeys();
-        $sigVerifier = new AsymmetricVerifier($jwks);
+        $auth0->configuration()->setTokenCache($tokenCache);
 
-        $idTokenVerifier = new IdTokenVerifier($auth0Domain, env('AUTH0_AUDIENCE', false), $sigVerifier);
-
-        $this->decodedToken = $idTokenVerifier->verify($token);
-    }
-
-    /**
-     * If multiple Auth0 domain is set, return the first one
-     *
-     * @return string
-     */
-    protected function getAuth0Domain(): string
-    {
-        $auth0Domains = explode(',', env('AUTH0_DOMAIN', false));
-
-        return $auth0Domains[0] ?? '';
+        $this->decodedToken = $auth0->decode($token, null, null, null, null, null, null, Token::TYPE_TOKEN);
     }
 }
