@@ -5,7 +5,7 @@ namespace Carsguide\Auth\Middlewares;
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Configuration\SdkConfiguration;
 use Auth0\SDK\Token;
-use Carsguide\Auth\Handlers\CacheHandler;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class BaseAuthMiddleware
 {
@@ -23,16 +23,18 @@ class BaseAuthMiddleware
             'domain' =>  env('AUTH0_DOMAIN', false),
             'clientId' => env('AUTH0_JWT_CLIENTID'),
             'clientSecret' => env('AUTH0_JWT_CLIENTSECRET'),
-            'audience' => [env('AUTH0_AUDIENCE')],
-            'tokenAlgorithm' => env('AUTH0_ALGORITHM')
+            'audience' => [env('AUTH0_AUDIENCE', false)],
+            'tokenAlgorithm' => env('AUTH0_ALGORITHM', 'RS256')
         ]);
 
-        $tokenCache = new CacheHandler();
+        $tokenCache = new FilesystemAdapter();
 
         $auth0 = new Auth0($sdkConfiguration);
 
         $auth0->configuration()->setTokenCache($tokenCache);
 
-        $this->decodedToken = $auth0->decode($token, null, null, null, null, null, null, Token::TYPE_TOKEN);
+        $decodedToken = $auth0->decode($token, null, null, null, null, null, null, Token::TYPE_TOKEN);
+
+        $this->decodedToken = $decodedToken->toArray();
     }
 }
