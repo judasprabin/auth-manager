@@ -1,5 +1,5 @@
 # auth-manager
-Manages Lumen and Laravel Auth0 integratation in micro services.
+Manages Lumen and Laravel Auth0 integration in microservices using PHP 8.0 version.
 
 ## Installation
 Via composer
