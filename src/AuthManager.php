@@ -199,7 +199,6 @@ class AuthManager
             }
 
             return $this->successResponse($response->getStatusCode(), $accessToken);
-
         } catch (Exception $e) {
             return $this->errorResponse($e->getCode(), $e->getMessage());
         }
@@ -291,7 +290,7 @@ class AuthManager
      */
     public function getUrl()
     {
-        If (!$this->url) {
+        if (!$this->url) {
             if (!$this->url = env('AUTH0_OAUTH_URL')) {
                 throw new Exception("Auth0 OAuth URL not set");
             }
