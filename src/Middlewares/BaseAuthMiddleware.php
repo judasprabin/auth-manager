@@ -10,6 +10,11 @@ use Psr\Cache\CacheItemPoolInterface;
 class BaseAuthMiddleware
 {
     /**
+     * @var int $ttl
+     */
+    protected int $ttl = 1800;
+
+    /**
      * verify and decode the token
      *
      * @param string $token
@@ -24,7 +29,8 @@ class BaseAuthMiddleware
             'clientId' => env('AUTH0_JWT_CLIENTID'),
             'clientSecret' => env('AUTH0_JWT_CLIENTSECRET'),
             'audience' => [env('AUTH0_AUDIENCE', false)],
-            'tokenAlgorithm' => env('AUTH0_ALGORITHM', 'RS256')
+            'tokenAlgorithm' => env('AUTH0_ALGORITHM', 'RS256'),
+            'strategy' => env('AUTH0_STRATEGY', 'api')
         ]);
 
         $tokenCache = app(CacheItemPoolInterface::class);
@@ -32,7 +38,7 @@ class BaseAuthMiddleware
         $auth0 = new Auth0($sdkConfiguration);
 
         $auth0->configuration()->setTokenCache($tokenCache);
-        $auth0->configuration()->setTokenCacheTtl(1800);
+        $auth0->configuration()->setTokenCacheTtl($this->ttl);
 
         $decodedToken = $auth0->decode($token, null, null, null, null, null, null, Token::TYPE_TOKEN);
 
