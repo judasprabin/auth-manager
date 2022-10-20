@@ -1,5 +1,5 @@
 # auth-manager
-Manages Lumen Auth0 integratation in micro services.
+Manages Lumen and Laravel Auth0 integration in microservices using PHP 8.0 version.
 
 ## Installation
 Via composer
@@ -27,20 +27,38 @@ AUTH0_ALGORITHM=
 | AUTH0_ALGORITHM | Algorithm method, advise RS256 (default) |
 
 ### Registering service provider
+####Lumen
 Add the following snippet to the `bootstrap/app.php` file under the register service providers section:
 
 ```php
 $app->register(Carsguide\Auth\Providers\AuthManagerServiceProvider::class);
 ```
 
+####Laravel
+Add the following snippet to the `config/app.php` file under the register service providers section:
+
+```php
+Carsguide\Auth\Providers\AuthManagerServiceProvider::class,
+```
+
 ### Registering middleware
-To use token and scope validation register the middleware via routeMiddleware() in bootstrap/app.php
+To use token and scope validation register the middleware via routeMiddleware()
+
+####Lumen: in bootstrap/app.php
 
 ```php
 $app->routeMiddleware([
     'auth' => Carsguide\Auth\Middlewares\Auth0Middleware::class,
 ]);
 ```
+
+####Laravel: app/Http/kernel.php
+
+```php
+protected $routeMiddleware = [
+    'auth' => \Carsguide\Auth\Middlewares\Auth0Middleware::class,
+];
+````
 
 ## Usage
 ### Generate JWT Token

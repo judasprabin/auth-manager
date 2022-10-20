@@ -4,12 +4,11 @@ namespace Carsguide\Auth\Middlewares;
 
 use Auth0\SDK\Exception\CoreException;
 use Auth0\SDK\Exception\InvalidTokenException;
-use Auth0\SDK\JWTVerifier;
-use Carsguide\Auth\Handlers\CacheHandler;
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
-class AddJwtNamespaceFieldsMiddleware
+class AddJwtNamespaceFieldsMiddleware extends BaseAuthMiddleware
 {
     /**
      * Run the request filter.
@@ -22,6 +21,11 @@ class AddJwtNamespaceFieldsMiddleware
     public function handle($request, Closure $next, $fields)
     {
         $this->request = $request;
+
+        if (!$this->request->bearerToken()) {
+            Log::info('No token provided');
+            return $this->json('No token provided', 401);
+        }
 
         //verify and decode token
         try {
@@ -36,24 +40,6 @@ class AddJwtNamespaceFieldsMiddleware
         $this->addFieldsToRequest();
 
         return $next($this->request);
-    }
-
-    /**
-     * verify and decode the token
-     *
-     * @param string $token
-     * @return void
-     */
-    public function verifyAndDecodeToken($token)
-    {
-        $verifier = new JWTVerifier([
-            'supported_algs' => [env('AUTH0_ALGORITHM', 'RS256')],
-            'valid_audiences' => [env('AUTH0_AUDIENCE', false)],
-            'authorized_iss' => explode(',', env('AUTH0_DOMAIN', false)),
-            'cache' => new CacheHandler(),
-        ]);
-
-        $this->decodedToken = $verifier->verifyAndDecode($token);
     }
 
     /**
@@ -77,7 +63,7 @@ class AddJwtNamespaceFieldsMiddleware
         foreach ($this->fields as $field) {
             $namespaceField = $this->getJwtNamespace() . $field;
 
-            $value = !empty($this->decodedToken->$namespaceField) ? $this->decodedToken->$namespaceField : null;
+            $value =  $this->decodedToken[$namespaceField] ?? null;
 
             $input = ['jwt' => ['namespace' => [$field => $value]]];
 

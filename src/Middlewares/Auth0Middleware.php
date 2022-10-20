@@ -4,14 +4,12 @@ namespace Carsguide\Auth\Middlewares;
 
 use Auth0\SDK\Exception\CoreException;
 use Auth0\SDK\Exception\InvalidTokenException;
-use Auth0\SDK\JWTVerifier;
-use Carsguide\Auth\Handlers\CacheHandler;
 use Closure;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
-class Auth0Middleware
+class Auth0Middleware extends BaseAuthMiddleware
 {
     /**
      * Run the request filter.
@@ -64,23 +62,7 @@ class Auth0Middleware
         return $next($request);
     }
 
-    /**
-     * verify and decode the token
-     *
-     * @param string $token
-     * @return void
-     */
-    public function verifyAndDecodeToken($token)
-    {
-        $verifier = new JWTVerifier([
-            'supported_algs' => [env('AUTH0_ALGORITHM', 'RS256')],
-            'valid_audiences' => [env('AUTH0_AUDIENCE', false)],
-            'authorized_iss' => explode(',', env('AUTH0_DOMAIN', false)),
-            'cache' => new CacheHandler(),
-        ]);
 
-        $this->decodedToken = $verifier->verifyAndDecode($token);
-    }
 
     /**
      * verify the user has access to scope and scopes are defined in JWT
@@ -92,7 +74,7 @@ class Auth0Middleware
     public function verifyUserHasScopeAccess($scope)
     {
         //no scopes defined
-        if (!isset($this->decodedToken->scope)) {
+        if (empty($this->decodedToken['scope'])) {
             throw new Exception('No scopes defined in JWT');
         }
 
@@ -109,7 +91,7 @@ class Auth0Middleware
      */
     public function getScopesFromToken()
     {
-        return explode(' ', $this->decodedToken->scope);
+        return explode(' ', $this->decodedToken['scope']);
     }
 
     /**
