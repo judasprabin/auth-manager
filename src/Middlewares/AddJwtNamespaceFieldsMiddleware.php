@@ -2,6 +2,8 @@
 
 namespace Carsguide\Auth\Middlewares;
 
+use Auth0\SDK\Exception\Auth0Exception;
+use Auth0\SDK\Exception\ConfigurationException;
 use Auth0\SDK\Exception\CoreException;
 use Auth0\SDK\Exception\InvalidTokenException;
 use Closure;
@@ -13,10 +15,11 @@ class AddJwtNamespaceFieldsMiddleware extends BaseAuthMiddleware
     /**
      * Run the request filter.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure $next
-     * @param  string $scope
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @param $fields
      * @return mixed
+     * @throws Auth0Exception|CoreException
      */
     public function handle($request, Closure $next, $fields)
     {
@@ -30,9 +33,12 @@ class AddJwtNamespaceFieldsMiddleware extends BaseAuthMiddleware
         //verify and decode token
         try {
             $this->verifyAndDecodeToken($this->request->bearerToken());
-        } catch (CoreException | InvalidTokenException $e) {
-            //Log::info('Invalid token');
-            //return $this->json('Invalid token', 401);
+        } catch (InvalidTokenException $exception) {
+            Log::info('Invalid token');
+            return $this->json('Invalid token', 401);
+        } catch (Auth0Exception|ConfigurationException $e) {
+            Log::warning('Auth0 Exception', ['exceptionMessage' => $e->getMessage()]);
+            return $this->json($e->getMessage(), 500);
         }
 
         $this->explodeFields($fields);

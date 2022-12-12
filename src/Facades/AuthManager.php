@@ -6,5 +6,8 @@ use Illuminate\Support\Facades\Facade;
 
 class AuthManager extends Facade
 {
-    protected static function getFacadeAccessor() {return 'authmanager';}
+    protected static function getFacadeAccessor()
+    {
+        return 'authmanager';
+    }
 }
