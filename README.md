@@ -27,14 +27,14 @@ AUTH0_ALGORITHM=
 | AUTH0_ALGORITHM | Algorithm method, advise RS256 (default) |
 
 ### Registering service provider
-####Lumen
+#### Lumen
 Add the following snippet to the `bootstrap/app.php` file under the register service providers section:
 
 ```php
 $app->register(Carsguide\Auth\Providers\AuthManagerServiceProvider::class);
 ```
 
-####Laravel
+#### Laravel
 Add the following snippet to the `config/app.php` file under the register service providers section:
 
 ```php
@@ -44,7 +44,7 @@ Carsguide\Auth\Providers\AuthManagerServiceProvider::class,
 ### Registering middleware
 To use token and scope validation register the middleware via routeMiddleware()
 
-####Lumen: in bootstrap/app.php
+#### Lumen: bootstrap/app.php
 
 ```php
 $app->routeMiddleware([
@@ -52,7 +52,7 @@ $app->routeMiddleware([
 ]);
 ```
 
-####Laravel: app/Http/kernel.php
+#### Laravel: app/Http/kernel.php
 
 ```php
 protected $routeMiddleware = [
