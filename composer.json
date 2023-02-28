@@ -1,9 +1,10 @@
 {
     "name": "carsguide/auth-manager",
-    "description": "Auth0 wrapper for Lumen",
+    "description": "Auth0 wrapper for Lumen/Laravel",
     "keywords": [
         "Auth0",
-        "Lumen auth0"
+        "Lumen auth0",
+        "Laravel"
     ],
     "homepage": "https://github.com/carsguide/auth-manager",
     "license": "MIT",
@@ -11,6 +12,10 @@
         {
             "name": "Anam Hossain",
             "email": "anam.hossain@carsguide.com.au"
+        },
+        {
+            "name": "Shameemah Kurzawa",
+            "email": "shameemah.kurzawa@carsguide.com.au"
         }
     ],
     "require": {
@@ -23,7 +28,7 @@
         "illuminate/log": "^9.0",
         "guzzlehttp/guzzle": "^7.2",
         "psr/cache": "^3.0",
-        "firebase/php-jwt": "^5.3",
+        "firebase/php-jwt": "^v6.0.0",
         "symfony/cache": "^6.0",
         "einar-hansen/laravel-psr-6-cache": "^1.0"
     },
