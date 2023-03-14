@@ -28,7 +28,7 @@
         "illuminate/log": "^9.0",
         "guzzlehttp/guzzle": "^7.2",
         "psr/cache": "^3.0",
-        "firebase/php-jwt": "^v6.0.0",
+        "firebase/php-jwt": "^6.0",
         "symfony/cache": "^6.0",
         "einar-hansen/laravel-psr-6-cache": "^1.0"
     },
