@@ -9,14 +9,31 @@ use Psr\Cache\CacheItemInterface;
 
 class CacheItemHandler implements CacheItemInterface
 {
+    /**
+     * @var string
+     */
     private string $key;
 
+    /**
+     * @var mixed|null
+     */
     private mixed $value;
 
+    /**
+     * @var bool
+     */
     private bool $hit;
 
+    /**
+     * @var DateTimeInterface|null
+     */
     private ?DateTimeInterface $expires = null;
 
+    /**
+     * @param string $key
+     * @param mixed|null $value
+     * @param bool $hit
+     */
     public function __construct(string $key, mixed $value = null, bool $hit = false)
     {
         $this->key = $key;
@@ -41,12 +58,6 @@ class CacheItemHandler implements CacheItemInterface
     }
 
     /**
-     * A cache hit occurs when a Calling Library requests an Item by key
-     * and a matching value is found for that key, and that value has
-     * not expired, and the value is not invalid for some other reason.
-     *
-     * Calling Libraries SHOULD make sure to verify isHit() on all get() calls.
-     *
      * {@inheritdoc}
      */
     public function isHit(): bool
@@ -67,18 +78,19 @@ class CacheItemHandler implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function expiresAt(?DateTimeInterface $expires): static
+    public function expiresAt(?DateTimeInterface $expiration): static
     {
-        if ($expires instanceof DateTimeInterface && ! $expires instanceof DateTimeImmutable) {
-            $timezone = $expires->getTimezone();
-            $expires = DateTimeImmutable::createFromFormat('U', (string) $expires->getTimestamp(), $timezone);
-            if ($expires) {
-                $expires = $expires->setTimezone($timezone);
+        if ($expiration instanceof DateTimeInterface && !$expiration instanceof DateTimeImmutable) {
+            $timezone = $expiration->getTimezone();
+            $expiration = DateTimeImmutable::createFromFormat('U', (string) $expiration->getTimestamp(), $timezone);
+
+            if ($expiration) {
+                $expiration = $expiration->setTimezone($timezone);
             }
         }
 
-        if ($expires instanceof DateTimeInterface) {
-            $this->expires = $expires;
+        if ($expiration instanceof DateTimeInterface) {
+            $this->expires = $expiration;
         } else {
             $this->expires = null;
         }
@@ -88,6 +100,7 @@ class CacheItemHandler implements CacheItemInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     public function expiresAfter(int|DateInterval|null $time): static
     {
@@ -108,6 +121,9 @@ class CacheItemHandler implements CacheItemInterface
         return $this;
     }
 
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getExpiresAt(): ?DateTimeInterface
     {
         return $this->expires;

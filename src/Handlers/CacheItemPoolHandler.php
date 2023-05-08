@@ -15,7 +15,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
     private Repository $repository;
 
     /**
-     * @var \Psr\Cache\CacheItemInterface[]
+     * @var CacheItemInterface[]
      */
     private array $deferred = [];
 
@@ -25,7 +25,16 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
     }
 
     /**
+     * Destructor.
+     */
+    public function __destruct()
+    {
+        $this->commit();
+    }
+
+    /**
      * {@inheritdoc}
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function getItem(string $key): CacheItemInterface
     {
@@ -34,16 +43,17 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
         if (isset($this->deferred[$key])) {
             return clone $this->deferred[$key];
         } elseif ($this->repository->has($key)) {
-            return new CacheItemHandler($key, $this->repository->get($key), true);
+            return new CacheItemHandler($key, unserialize($this->repository->get($key)), true);
         }
 
-        return new CacheItemHandler($key, null, false);
+        return new CacheItemHandler($key);
     }
 
     /**
      * {@inheritdoc}
      *
-     * @return iterable<string, \Psr\Cache\CacheItemInterface>
+     * @return iterable<string, CacheItemInterface>
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function getItems(array $keys = []): iterable
     {
@@ -54,6 +64,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function hasItem(string $key): bool
     {
@@ -61,8 +72,13 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
         if (isset($this->deferred[$key])) {
             $item = $this->deferred[$key];
+            $expiresAt = $this->getExpiresAt($item);
 
-            return $item->isHit();
+            if (!$expiresAt) {
+                return true;
+            }
+
+            return $expiresAt > new DateTimeImmutable();
         }
 
         return $this->repository->has($key);
@@ -85,6 +101,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function deleteItem(string $key): bool
     {
@@ -92,7 +109,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
         unset($this->deferred[$key]);
 
-        if (! $this->hasItem($key)) {
+        if (!$this->hasItem($key)) {
             return true;
         }
 
@@ -101,6 +118,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function deleteItems(array $keys): bool
     {
@@ -120,18 +138,20 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws InvalidArgumentException
+     * @throws \Exception
      */
     public function save(CacheItemInterface $item): bool
     {
-        if (! $item instanceof CacheItemHandler) {
-            throw new InvalidArgumentException('$item must be an instance of '.CacheItemHandler::class);
+        if (!$item instanceof CacheItemHandler) {
+            throw new InvalidArgumentException('$item must be an instance of ' . CacheItemHandler::class);
         }
 
-        $expiresAt = $item->getExpiresAt();
+        $expiresAt = $this->getExpiresAt($item);
 
-        if (! $expiresAt) {
+        if (!$expiresAt) {
             try {
-                $this->repository->forever($item->getKey(), $item->get());
+                $this->repository->forever($item->getKey(), serialize($item->get()));
             } catch (Throwable $exception) {
                 return false;
             }
@@ -148,7 +168,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
         }
 
         try {
-            $this->repository->put($item->getKey(), $item->get(), $lifetime);
+            $this->repository->put($item->getKey(), serialize($item->get()), $lifetime);
         } catch (Throwable $exception) {
             return false;
         }
@@ -158,14 +178,15 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws InvalidArgumentException
      */
     public function saveDeferred(CacheItemInterface $item): bool
     {
-        if (! $item instanceof CacheItemHandler) {
-            throw new InvalidArgumentException('$item must be an instance of '.CacheItemHandler::class);
+        if (!$item instanceof CacheItemHandler) {
+            throw new InvalidArgumentException('$item must be an instance of ' . CacheItemHandler::class);
         }
 
-        $expiresAt = $item->getExpiresAt();
+        $expiresAt = $this->getExpiresAt($item);
 
         if ($expiresAt && ($expiresAt < new DateTimeImmutable())) {
             return false;
@@ -180,6 +201,7 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
 
     /**
      * {@inheritdoc}
+     * @throws InvalidArgumentException
      */
     public function commit(): bool
     {
@@ -195,17 +217,24 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
     }
 
     /**
-     * @param  string  $key
-     *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @param string $key
+     * @return void
+     * @throws InvalidArgumentException
      */
     private function validateKey(string $key): void
     {
-        if (! is_string($key) || preg_match('#[{}\(\)/\\\\@:]#', $key)) {
+        if (preg_match('#[{}\(\)/\\\\@:]#', $key)) {
             throw new InvalidArgumentException();
         }
     }
 
+    /**
+     * Calculate validity of the cache item
+     *
+     * @param DateTimeInterface $expiresAt
+     * @return int
+     * @throws \Exception
+     */
     protected static function computeLifetime(DateTimeInterface $expiresAt): int
     {
         $now = new DateTimeImmutable('now', $expiresAt->getTimezone());
@@ -213,8 +242,12 @@ class CacheItemPoolHandler implements CacheItemPoolInterface
         return $expiresAt->getTimestamp() - $now->getTimestamp();
     }
 
-    public function __destruct()
+    /**
+     * @param CacheItemHandler $item
+     * @return DateTimeInterface|null
+     */
+    private function getExpiresAt(CacheItemHandler $item): ?DateTimeInterface
     {
-        $this->commit();
+        return $item->getExpiresAt();
     }
 }
