@@ -3,7 +3,7 @@
 namespace Carsguide\Auth\Providers;
 
 use Carsguide\Auth\AuthManager;
-use EinarHansen\Cache\CacheItemPool;
+use Carsguide\Auth\Handlers\CacheItemPoolHandler;
 use GuzzleHttp\Client;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +19,7 @@ class AuthManagerServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(CacheItemPoolInterface::class, function ($app) {
-            return new CacheItemPool($app->make(Repository::class));
+            return new CacheItemPoolHandler(app()->make(Repository::class));
         });
 
         $this->app->bind('authmanager', function () {
